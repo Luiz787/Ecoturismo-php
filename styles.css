@@ -54,7 +54,6 @@ body {
 }
 
 
-
 .navegacao {
     margin-left: 20px;
     color: #fefefe;
@@ -67,7 +66,15 @@ body {
     color: #facc15;
     text-decoration: none;
 }
-
+.nav2{
+    margin-left: 20px;
+    color: #fefefe;
+    font-weight: bold;
+}
+.nav2:hover {
+    color: #facc15;
+    text-decoration: none;
+}
 /* Anúncio */
 .anuncio {
     margin-top: 100px; /*Espaço acima do anuncio*/
