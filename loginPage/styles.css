@@ -1,4 +1,4 @@
-{ 
+*   { 
     /*Servirá para todos os elementos se portarem dentro da box-sizing definida e não correr erros de layout, onde ao inserir um valor, ele o terá e não entrará em conflito*/
     box-sizing: border-box;
 }
@@ -99,4 +99,21 @@ a:hover{
      width: 100%;
     max-width: 300px;
     padding: 10px;
+}
+
+.Conteudo a {
+    display: inline-block;
+    margin-left: 0;
+    padding: 10px 20px;
+    background: #28a745;
+    color: #fff;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+}
+.Conteudo a:hover {
+    color: #facc15;
+}
+.Conteudo p {
+    margin: 0 0 8px;
 }

@@ -1,9 +1,18 @@
 <?php
+$host = 'localhost';
+$db   = 'login';
+$port = '3306';
+$user = 'root';
+$pass = ''; 
 
-$conn = new mysqli("localhost","root","","login");
 
-if($conn->connect_error){
-    die("Erro de conexão");
+try {
+    $pdo = new PDO("mysql:host=$host;port=$port;dbname=$db;charset=utf8", $user, $pass);
+    // Configura o PDO para lançar exceções em caso de erro
+	//echo nl2br("conectando \n") ;
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die("Erro na conexão: " . $e->getMessage());
 }
 
 ?>
