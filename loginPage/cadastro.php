@@ -43,10 +43,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmtVerifica->fetch()) {
                 $mensagemErro = 'Este usuario ja existe.';
             } else {
+                $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
                 $sqlCadastro = "INSERT INTO usuarios (usuario, senha, Telefone, CPF, permissão) VALUES (:usuario, :senha, :telefone, :cpf, :permissao)";
                 $stmtCadastro = $pdo->prepare($sqlCadastro);
                 $stmtCadastro->bindValue(':usuario', $usuario);
-                $stmtCadastro->bindValue(':senha', $senha);
+                $stmtCadastro->bindValue(':senha', $senhaHash);
                 $stmtCadastro->bindValue(':telefone', $telefoneNumerico);
                 $stmtCadastro->bindValue(':cpf', $cpfNumerico);
                 $stmtCadastro->bindValue(':permissao', 'usuario');

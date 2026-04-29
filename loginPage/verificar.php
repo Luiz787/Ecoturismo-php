@@ -1,8 +1,8 @@
 <?php
 session_start();
 require 'conexao.php';
-$usuario = $_POST['usuario'];
-$senha = $_POST['senha'];
+$usuario = $_POST['usuario'] ?? '';
+$senha = $_POST['senha'] ?? '';
 
 // Prepared Statement
 $sql = "SELECT * FROM usuarios WHERE usuario = :usuario";
@@ -11,8 +11,8 @@ $stmt->bindValue(':usuario', $usuario);
 $stmt->execute();
 
 $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
-//if ($usuario && password_verify($senha, $usuario['senha'])) {
-if ($usuario && $senha == $usuario['senha']) {
+//if ($usuario && $senha == $usuario['senha']) {
+if ($usuario && isset($usuario['senha']) && password_verify($senha, $usuario['senha'])) {
     // Login com sucesso
     $_SESSION['usuario_id']   = $usuario['ID_Usuario'];
     $_SESSION['usuario_nome'] = $usuario['usuario'];

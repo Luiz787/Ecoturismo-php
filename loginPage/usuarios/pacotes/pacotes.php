@@ -10,107 +10,6 @@ if (!isset($_SESSION['usuario_id']) || $_SESSION['permissao'] === 'admin') {
 $mensagem = '';
 $tipoMensagem = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pacote_id'], $_POST['pacote_nome'])) {
-    $pacoteId = (int) $_POST['pacote_id'];
-    $pacoteNome = trim($_POST['pacote_nome']);
-    $usuarioId = (int) $_SESSION['usuario_id'];
-
-    if ($pacoteId <= 0 || $pacoteNome === '') {
-        $mensagem = 'Pacote invalido.';
-        $tipoMensagem = 'erro';
-    } else {
-        $salvou = false;
-        $erroDetalhe = '';
-        // Fallback reativado (tabela com/sem crase) para compatibilidade de ambiente.
-        $tabelasCandidatas = [
-            'reservas.reservas',
-            '`reservas`.`reservas`'
-        ];
-
-        foreach ($tabelasCandidatas as $tabelaReserva) {
-            try {
-                $stmtCols = $pdo->query("SHOW COLUMNS FROM " . $tabelaReserva);
-                $colunas = $stmtCols->fetchAll(PDO::FETCH_COLUMN);
-                if (count($colunas) === 0) {
-                    continue;
-                }
-
-                $escolherColuna = function (array $nomes) use ($colunas) {
-                    foreach ($nomes as $nome) {
-                        if (in_array($nome, $colunas, true)) {
-                            return $nome;
-                        }
-                    }
-                    return null;
-                };
-
-                // Fallback reativado apenas para colunas obrigatorias.
-                $colUsuario = $escolherColuna(['usuario_id', 'id_usuario', 'ID_Usuario', 'FK_Usuario', 'usuario', 'Usuario']);
-                $colPacote = $escolherColuna(['FK_Local']);
-                $colStatus = $escolherColuna(['status', 'Status', 'situacao', 'situação']);
-                $colData = $escolherColuna(['data_reserva']);
-                $colRef = $escolherColuna(['pacote_ref']);
-
-                if ($colUsuario === null || $colStatus === null) {
-                    $erroDetalhe = 'Tabela encontrada sem colunas obrigatorias (usuario/status).';
-                    continue;
-                }
-
-                $campos = [$colUsuario, $colStatus];
-                $placeholders = [':usuario_id', ':status'];
-                $statusTexto = 'pendente';
-                $usaPacoteComoId = false;
-
-                if ($colPacote !== null) {
-                    $campos[] = $colPacote;
-                    $placeholders[] = ':pacote';
-                    // Fallback desativado:
-                    // $usaPacoteComoId = in_array($colPacote, ['FK_Local', 'FK_Pacote', 'pacote_id', 'id_pacote', 'ID_Pacote'], true);
-                    $usaPacoteComoId = ($colPacote === 'FK_Local');
-                } else {
-                    $statusTexto = 'pendente - pacote: ' . $pacoteNome;
-                }
-                if ($colData !== null) {
-                    $campos[] = $colData;
-                    $placeholders[] = 'NOW()';
-                }
-                if ($colRef !== null) {
-                    $campos[] = $colRef;
-                    $placeholders[] = ':pacote_ref';
-                }
-
-                $sqlReserva = "INSERT INTO " . $tabelaReserva . " (" . implode(', ', $campos) . ") VALUES (" . implode(', ', $placeholders) . ")";
-                $stmtReserva = $pdo->prepare($sqlReserva);
-                $stmtReserva->bindValue(':usuario_id', $usuarioId, PDO::PARAM_INT);
-                if ($colPacote !== null) {
-                    if ($usaPacoteComoId) {
-                        $stmtReserva->bindValue(':pacote', $pacoteId, PDO::PARAM_INT);
-                    } else {
-                        $stmtReserva->bindValue(':pacote', $pacoteNome);
-                    }
-                }
-                $stmtReserva->bindValue(':status', $statusTexto);
-                if ($colRef !== null) {
-                    $stmtReserva->bindValue(':pacote_ref', (string) $pacoteId);
-                }
-                $stmtReserva->execute();
-                $salvou = true;
-                break;
-            } catch (PDOException $e) {
-                $erroDetalhe = $e->getMessage();
-            }
-        }
-
-        if ($salvou) {
-            $mensagem = 'Reserva criada com sucesso!';
-            $tipoMensagem = 'sucesso';
-        } else {
-            $mensagem = 'Nao foi possivel reservar automaticamente. Verifique a tabela de reservas e colunas obrigatorias. Detalhe: ' . $erroDetalhe;
-            $tipoMensagem = 'erro';
-        }
-    }
-}
-
 $pacotes = [];
 
 function valorColuna(array $linha, array $nomesPossiveis, $padrao = null)
@@ -162,6 +61,7 @@ try {
         .btn { text-decoration: none; color: #fff; padding: 10px 14px; border-radius: 8px; font-weight: bold; }
         .btn-voltar { background: #3498db; }
         .btn-logout { background: #e74c3c; }
+        .btn-carrinho { background:rgb(7, 67, 14); }
         .mensagem { padding: 10px; border-radius: 8px; margin-bottom: 12px; }
         .sucesso { background: rgba(46, 204, 113, 0.25); }
         .erro { background: rgba(231, 76, 60, 0.25); }
@@ -202,11 +102,7 @@ try {
                         <?php if ($pacote['preco'] !== null && $pacote['preco'] !== ''): ?>
                             <p class="preco">R$ <?php echo htmlspecialchars(number_format((float) $pacote['preco'], 2, ',', '.')); ?></p>
                         <?php endif; ?>
-                        <form method="POST" action="">
-                            <input type="hidden" name="pacote_id" value="<?php echo (int) $pacote['id']; ?>">
-                            <input type="hidden" name="pacote_nome" value="<?php echo htmlspecialchars($pacote['nome']); ?>">
-                            <button type="submit">Reservar</button>
-                        </form>
+                        <a class="btn btn-carrinho" href="reservas/index.php?pacote_id=<?php echo (int) $pacote['id']; ?>">Reservar</a>
                     </article>
                 <?php endforeach; ?>
             <?php endif; ?>
