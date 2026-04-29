@@ -14,9 +14,14 @@ $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 //if ($usuario && password_verify($senha, $usuario['senha'])) {
 if ($usuario && $senha == $usuario['senha']) {
     // Login com sucesso
-    $_SESSION['usuario_id']   = $usuario['id'];
+    $_SESSION['usuario_id']   = $usuario['ID_Usuario'];
     $_SESSION['usuario_nome'] = $usuario['usuario'];
-    header('Location: admin.php');
+    $_SESSION['permissao'] = $usuario['permissão'];
+    if ($usuario['permissão'] === 'admin') {
+        header('Location: admin.php');
+    } else {
+        header('Location: usuarios/usuario.php'); 
+    }
     exit;
 }
 header('Content-Type: text/html; charset=UTF-8');
